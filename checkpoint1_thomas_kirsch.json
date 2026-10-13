@@ -1,0 +1,232 @@
+{
+  "name": "Entrega 1",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "ROL: eres un asistente en una empresa de automatización de AI y tus funciones son:\n\n-contestar al mensaje recibido pidiendo disculpas y diciendo que el soporte técnico se contactará lo más rápido posible para solucionar el problema.\n\n-recopilar los datos y generar un resumen de los clientes que se contacten y\nenviar el output por slack al canal de #soporte-tecnico.\nsolo los datos del cliente que como Nombre, empresa, contacto y un resumen de su problema, nada mas, no envies ni el mensaje de disculpas al cliente ni nada mas, solo lo necesario\n\n-completar el sheets con los datos del cliente en la fila correspondiente de la siguiente manera:\nNombre: nombre del cliente\nContacto: el mail de contacto que envíe el cliente\nEmpresa: empresa a la que el cliente pertenece\nResumen: un resumen del problema que el cliente plantea en el mensaje\n\nEscribí en español rioplatense y de forma estructurada y precisa pero relajada\n\nNO tenes autorización para hacer nada más que lo previamente planteado."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3c58177f-f413-495f-88c5-978966bb91b8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "ec89da4c-28fe-4c8d-9eab-f8b2bfd3c0ec",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "hGmiq1r2jK44zGTc",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C5J0HKB3J",
+          "mode": "list",
+          "cachedResultName": "soporte-tecnico"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        592,
+        0
+      ],
+      "id": "8aa4a74d-985b-4b6c-bc9a-362ee2d35e2e",
+      "name": "Send a message",
+      "webhookId": "7f8559a1-c160-4e21-b270-66dedae5df54",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "bRbEwgsK9F2Yuczb",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8c332ee4-6179-4b99-8844-9676dbbfc9b7",
+      "name": "Telegram Trigger",
+      "webhookId": "2124f80a-4492-4085-914c-fe86f5d44958",
+      "credentials": {
+        "telegramApi": {
+          "id": "XnHhO67PQ8esgE7h",
+          "name": "Entrega 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1bSphowd8Q6HsFFNNTNrNihqJXZUeFcJAtSSFYzxChWI",
+          "mode": "list",
+          "cachedResultName": "Entrega 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bSphowd8Q6HsFFNNTNrNihqJXZUeFcJAtSSFYzxChWI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1bSphowd8Q6HsFFNNTNrNihqJXZUeFcJAtSSFYzxChWI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ $('Telegram Trigger').item.json.message.from.first_name }}",
+            "Contacto": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+            "Resumen del caso": "={{ $('Telegram Trigger').item.json.message.text }}"
+          },
+          "matchingColumns": [
+            "Nombre"
+          ],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Resumen del caso",
+              "displayName": "Resumen del caso",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        0
+      ],
+      "id": "69b48e3b-5bf0-455c-9a55-74379ccce3e7",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "218oyw2BeNWDXzI7",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "025f609a-10f7-4f81-ad41-23b347331838",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "01d59f15c6a94e5cbb7d2bbd6d5fe4a8046f08b93d86fd1576974aa74000574f"
+  },
+  "nodeGroups": [],
+  "id": "xJHJEMDhmxetHkN5",
+  "tags": []
+}
